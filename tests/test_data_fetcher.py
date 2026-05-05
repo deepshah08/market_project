@@ -11,3 +11,13 @@ def test_fetch_nifty_data():
     assert isinstance(df, pd.DataFrame)
     if not df.empty:
         assert 'Close' in df.columns
+
+from data_fetcher import fetch_macro_data, fetch_polymarket_events
+
+def test_fetch_macro_data():
+    df = fetch_macro_data("CL=F", "2023-01-01", "2023-01-10")
+    assert isinstance(df, pd.DataFrame)
+
+def test_fetch_polymarket_events():
+    events = fetch_polymarket_events()
+    assert isinstance(events, list)
