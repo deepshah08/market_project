@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 from data_fetcher import fetch_nifty_data, fetch_macro_data, fetch_nifty_pe_data
 from news_scraper import get_latest_news
 import datetime
@@ -66,10 +67,6 @@ def render_macro_tab():
 
     with st.spinner("Fetching weekly data..."):
         nifty_df = get_cached_nifty(start_str, end_str)
-        # Debug: show the data structure
-        st.write("Debug Nifty Data (first 5 rows):")
-        st.write(nifty_df.head())
-        st.write(f"Time column type: {type(nifty_df['time'].iloc[0])}")
 
     # Panel 1: Nifty vs USD/INR
     st.subheader("1. Nifty 50 vs USD/INR Exchange Rate (% Change)")
@@ -105,10 +102,11 @@ def render_macro_tab():
 
     # Panel 5: Nifty vs India 10Y G-Sec (Index Proxy)
     st.subheader("5. Nifty 50 vs India 10Y G-Sec Index (% Change)")
+    from data_fetcher import fetch_fred_data
     with st.spinner("Loading 10Y Benchmark..."):
-        # ^N10YGBM is the Nifty 10 yr Benchmark G-Sec Index
-        yield_df = get_cached_macro("^N10YGBM", start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, yield_df, "10Y G-Sec Index", 'rgba(128, 0, 128, 1)')
+        # INDIRLTLT01STM is the FRED code for India 10-Year Government Bond Yields
+        yield_df = fetch_fred_data("INDIRLTLT01STM", start_str, end_str)
+        create_percentage_overlay_chart(nifty_df, yield_df, "10Y G-Sec Yield", 'rgba(128, 0, 128, 1)')
 
 def render_screener_tab():
     st.header("Market Screener (TradingView)")

@@ -25,10 +25,9 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         else:
             return pd.DataFrame()
     
-    # Convert to clean YYYY-MM-DD string, dropping timezone
-    # IMPORTANT: The library calls pd.to_datetime() internally, 
-    # so we must provide a format it can easily parse back.
-    df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).dt.strftime('%Y-%m-%d')
+    # Convert to clean datetime.date objects
+    # This is often the most reliable format for library-agnostic date handling
+    df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).dt.date
     
     # Drop rows with invalid dates
     df = df.dropna(subset=['time'])
@@ -38,19 +37,12 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
     })
     
-    # Ensure standard columns are present and numeric
-    for col in ['open', 'high', 'low', 'close', 'volume']:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-    
-    # Final column selection
+    # Standardize columns
     target_cols = ['time', 'open', 'high', 'low', 'close', 'volume']
     existing_cols = [c for c in target_cols if c in df.columns]
     
-    # Reset index to ensure it's not passed as a weird column
-    df = df.reset_index(drop=True)
-    
-    return df[existing_cols].sort_values('time')
+    # Final cleanup: drop any remaining NaNs and sort
+    return df[existing_cols].dropna().sort_values('time').reset_index(drop=True)
 
 def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
     """Fetches Nifty 50 historical data."""
@@ -106,15 +98,12 @@ def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
         if df is not None and not df.empty:
             # Force cleanup and conversion
             df = df.copy()
-            df['time_dt'] = pd.to_datetime(df['Date'])
-            df['time'] = df['time_dt'].dt.strftime('%Y-%m-%d')
-            df['value'] = pd.to_numeric(df['P/E'], errors='coerce')
+            df['time_dt'] = pd.to_datetime(df['DATE'])
+            df['time'] = df['time_dt'].dt.date
+            df['value'] = pd.to_numeric(df['pe'], errors='coerce')
             
             # Drop invalid values and sort
-            df = df.dropna(subset=['time', 'value'])
-            df = df.sort_values(by='time')
-            
-            return df[['time', 'value']]
+            return df[['time', 'value']].dropna().sort_values(by='time').reset_index(drop=True)
         return pd.DataFrame()
     except Exception as e:
         return pd.DataFrame()
