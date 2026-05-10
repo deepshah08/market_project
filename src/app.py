@@ -1,52 +1,71 @@
 import streamlit as st
-from data_fetcher import fetch_nifty_data, fetch_macro_data, fetch_polymarket_events
+from data_fetcher import fetch_nifty_data, fetch_macro_data, fetch_nifty_pe_data
 from news_scraper import get_latest_news
 import datetime
+from lightweight_charts.widgets import StreamlitChart
 
 def get_app_title():
     return "NSE Market Assistant"
 
-def render_macro_tab():
-    st.header("Macro & Polymarket Correlation Hub")
-    from lightweight_charts.widgets import StreamlitChart
+def create_overlay_chart(primary_df, secondary_df, indicator_name, line_color):
+    """Helper to create a standard StreamlitChart overlay."""
+    if primary_df.empty:
+        st.warning("Primary data missing.")
+        return
+        
+    chart = StreamlitChart(width=1000, height=400)
+    chart.set(primary_df)
     
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        st.subheader("Controls")
-        indicator = st.selectbox("Select Overlay Indicator", ["None", "Crude Oil (CL=F)", "US 10Y Bond (^TNX)", "Polymarket Events"])
-        if indicator == "Polymarket Events":
-            events = fetch_polymarket_events()
-            if events:
-                event_titles = [e.get('title', 'Unknown') for e in events]
-                selected_event = st.selectbox("Select Event", event_titles)
-                st.info("Polymarket overlay requires historical API. Showing current events only.")
-            else:
-                st.warning("Could not fetch Polymarket events.")
+    if not secondary_df.empty:
+        line = chart.create_line(name=indicator_name, color=line_color, price_scale_id='right')
+        line.set(secondary_df)
+    else:
+        st.warning(f"Secondary data ({indicator_name}) missing.")
+        
+    chart.load()
 
-    with col2:
-        st.subheader("Nifty 50 vs Overlay")
-        end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=365) # Show 1 year
-        
-        nifty_df = fetch_nifty_data(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
-        
-        if not nifty_df.empty:
-            chart = StreamlitChart(width=800, height=500)
-            chart.set(nifty_df) # Main series is Candlestick by default
-            
-            if indicator not in ["None", "Polymarket Events"]:
-                ticker = "CL=F" if "Crude" in indicator else "^TNX"
-                macro_df = fetch_macro_data(ticker, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
-                if not macro_df.empty:
-                    # Create a line series with a secondary price scale
-                    line = chart.create_line(name=indicator, color='rgba(255, 165, 0, 0.8)', price_scale_id='right')
-                    line.set(macro_df)
-                else:
-                    st.warning(f"Could not fetch overlay data for {indicator}.")
-            
-            chart.load()
-        else:
-            st.warning("Could not fetch Nifty 50 data.")
+def render_macro_tab():
+    st.header("Macro Correlation Hub (V4)")
+    
+    end_date = datetime.date.today()
+    start_date = end_date - datetime.timedelta(days=365) # 1 Year
+    start_str = start_date.strftime("%Y-%m-%d")
+    end_str = end_date.strftime("%Y-%m-%d")
+
+    with st.spinner("Fetching market and macro data..."):
+        # Fetch base Nifty 50 data once
+        nifty_df = fetch_nifty_data(start_str, end_str)
+
+    # Panel 1: Nifty vs USD/INR
+    st.subheader("1. Nifty 50 vs USD/INR Exchange Rate")
+    with st.spinner("Loading USD/INR..."):
+        usdinr_df = fetch_macro_data("INR=X", start_str, end_str)
+        create_overlay_chart(nifty_df, usdinr_df, "USD/INR", 'rgba(255, 165, 0, 0.8)')
+
+    st.divider()
+
+    # Panel 2: Nifty vs VIX
+    st.subheader("2. Nifty 50 vs India VIX")
+    with st.spinner("Loading India VIX..."):
+        vix_df = fetch_macro_data("^INDIAVIX", start_str, end_str)
+        create_overlay_chart(nifty_df, vix_df, "India VIX", 'rgba(255, 0, 0, 0.8)')
+
+    st.divider()
+
+    # Panel 3: Nifty vs Gold
+    st.subheader("3. Nifty 50 vs Gold (Futures)")
+    with st.spinner("Loading Gold..."):
+        gold_df = fetch_macro_data("GC=F", start_str, end_str)
+        create_overlay_chart(nifty_df, gold_df, "Gold", 'rgba(255, 215, 0, 0.8)')
+
+    st.divider()
+
+    # Panel 4: Nifty vs PE Ratio
+    st.subheader("4. Nifty 50 vs P/E Ratio")
+    with st.spinner("Loading Nifty P/E Ratio..."):
+        pe_df = fetch_nifty_pe_data(start_str, end_str)
+        create_overlay_chart(nifty_df, pe_df, "Nifty P/E", 'rgba(0, 0, 255, 0.8)')
+
 
 def render_news_tab():
     st.header("Geopolitical & Economic News Scanner")
