@@ -8,7 +8,7 @@ except ImportError:
     index_pe_pb_div = None
 
 def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
-    """Formats yfinance/nsepython dataframe for TradingView Lightweight Charts with Unix Timestamps."""
+    """Formats yfinance/nsepython dataframe for TradingView Lightweight Charts using clean YYYY-MM-DD strings."""
     if df.empty:
         return pd.DataFrame()
     
@@ -25,25 +25,30 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         else:
             return pd.DataFrame()
     
-    # Convert to Unix Timestamp (integers in seconds)
-    # This is the most unambiguous format for TradingView's JS engine
-    df['time'] = df['time_dt'].apply(lambda x: int(x.timestamp()))
+    # Convert to clean YYYY-MM-DD string, dropping timezone
+    # IMPORTANT: The library calls pd.to_datetime() internally, 
+    # so we must provide a format it can easily parse back.
+    df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).dt.strftime('%Y-%m-%d')
+    
+    # Drop rows with invalid dates
+    df = df.dropna(subset=['time'])
     
     # Clean up and rename columns
     df = df.rename(columns={
         'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
     })
     
-    # Standardize columns: always return time, open, high, low, close, volume
+    # Ensure standard columns are present and numeric
+    for col in ['open', 'high', 'low', 'close', 'volume']:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # Final column selection
     target_cols = ['time', 'open', 'high', 'low', 'close', 'volume']
     existing_cols = [c for c in target_cols if c in df.columns]
     
-    # Reset index and drop it to ensure the library doesn't get confused by the old Date index
+    # Reset index to ensure it's not passed as a weird column
     df = df.reset_index(drop=True)
-    
-    # Drop rows with invalid data and sort by time
-    if 'close' in df.columns:
-        df = df.dropna(subset=['close'])
     
     return df[existing_cols].sort_values('time')
 
@@ -102,7 +107,7 @@ def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
             # Force cleanup and conversion
             df = df.copy()
             df['time_dt'] = pd.to_datetime(df['Date'])
-            df['time'] = df['time_dt'].apply(lambda x: int(x.timestamp()))
+            df['time'] = df['time_dt'].dt.strftime('%Y-%m-%d')
             df['value'] = pd.to_numeric(df['P/E'], errors='coerce')
             
             # Drop invalid values and sort
