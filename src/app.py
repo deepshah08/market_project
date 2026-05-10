@@ -1,5 +1,4 @@
 import streamlit as st
-import plotly.graph_objects as go
 from data_fetcher import fetch_nifty_data, fetch_macro_data, fetch_polymarket_events
 from news_scraper import get_latest_news
 import datetime
@@ -9,43 +8,45 @@ def get_app_title():
 
 def render_macro_tab():
     st.header("Macro & Polymarket Correlation Hub")
+    from lightweight_charts.widgets import StreamlitChart
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 3])
     with col1:
-        st.subheader("Nifty 50")
-        end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=180)
-        nifty_df = fetch_nifty_data(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
-        
-        if not nifty_df.empty:
-            fig_nifty = go.Figure(data=[go.Scatter(x=nifty_df.index, y=nifty_df['Close'], name='Nifty 50')])
-            fig_nifty.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=300)
-            st.plotly_chart(fig_nifty, use_container_width=True)
-        else:
-            st.warning("Could not fetch Nifty data.")
-
-    with col2:
-        st.subheader("Secondary Indicator")
-        indicator = st.selectbox("Select Indicator", ["Crude Oil (CL=F)", "US 10Y Bond (^TNX)", "Polymarket Events"])
-        
+        st.subheader("Controls")
+        indicator = st.selectbox("Select Overlay Indicator", ["None", "Crude Oil (CL=F)", "US 10Y Bond (^TNX)", "Polymarket Events"])
         if indicator == "Polymarket Events":
             events = fetch_polymarket_events()
             if events:
                 event_titles = [e.get('title', 'Unknown') for e in events]
                 selected_event = st.selectbox("Select Event", event_titles)
-                st.info("Polymarket probability charts require historical data APIs which are complex. Showing current active events for now.")
-                st.write(f"Tracking: {selected_event}")
+                st.info("Polymarket overlay requires historical API. Showing current events only.")
             else:
                 st.warning("Could not fetch Polymarket events.")
+
+    with col2:
+        st.subheader("Nifty 50 vs Overlay")
+        end_date = datetime.date.today()
+        start_date = end_date - datetime.timedelta(days=365) # Show 1 year
+        
+        nifty_df = fetch_nifty_data(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+        
+        if not nifty_df.empty:
+            chart = StreamlitChart(width=800, height=500)
+            chart.set(nifty_df) # Main series is Candlestick by default
+            
+            if indicator not in ["None", "Polymarket Events"]:
+                ticker = "CL=F" if "Crude" in indicator else "^TNX"
+                macro_df = fetch_macro_data(ticker, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+                if not macro_df.empty:
+                    # Create a line series with a secondary price scale
+                    line = chart.create_line(name=indicator, color='rgba(255, 165, 0, 0.8)', price_scale_id='right')
+                    line.set(macro_df)
+                else:
+                    st.warning(f"Could not fetch overlay data for {indicator}.")
+            
+            chart.load()
         else:
-            ticker = "CL=F" if "Crude" in indicator else "^TNX"
-            macro_df = fetch_macro_data(ticker, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
-            if not macro_df.empty:
-                fig_macro = go.Figure(data=[go.Scatter(x=macro_df.index, y=macro_df['Close'], name=indicator, line=dict(color='orange'))])
-                fig_macro.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=300)
-                st.plotly_chart(fig_macro, use_container_width=True)
-            else:
-                st.warning(f"Could not fetch data for {indicator}.")
+            st.warning("Could not fetch Nifty 50 data.")
 
 def render_news_tab():
     st.header("Geopolitical & Economic News Scanner")
