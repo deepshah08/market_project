@@ -22,12 +22,13 @@ def get_cached_pe(start_str, end_str):
     return fetch_nifty_pe_data(start_str, end_str)
 
 def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color):
-    """Creates a two-pane synchronized chart (Top: Nifty, Bottom: Indicator) with original units."""
+    """Creates a two-pane synchronized chart (Top: Nifty, Bottom: Indicator) with equal heights."""
     if primary_df.empty:
         st.warning("Primary data (Nifty 50) missing.")
         return
         
-    chart = StreamlitChart(width=1000, height=600, inner_height=0.7)
+    # Create main chart (Top Pane - 50% height, increased total height to 800)
+    chart = StreamlitChart(width=1000, height=800, inner_height=0.5)
     
     # Render Nifty as Candlesticks in top pane
     # Force nanosecond resolution for charting library compatibility
@@ -35,9 +36,9 @@ def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color)
     formatted_nifty['time'] = pd.to_datetime(formatted_nifty['time']).dt.tz_localize(None).dt.as_unit('ns')
     chart.set(formatted_nifty)
     
-    # Create subchart (Bottom Pane - 30% height), synced with main
+    # Create subchart (Bottom Pane - 50% height), synced with main
     if not secondary_df.empty:
-        subchart = chart.create_subchart(height=0.3, sync=True)
+        subchart = chart.create_subchart(height=0.5, sync=True)
         line = subchart.create_line(name=indicator_name, color=line_color)
         
         formatted_secondary = secondary_df[['time', 'value']].copy()
