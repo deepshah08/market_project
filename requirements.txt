@@ -1,7 +1,6 @@
 streamlit
 pandas
 yfinance
-pandas-datareader
 plotly
 beautifulsoup4
 requests
@@ -9,3 +8,4 @@ pytest
 google-genai
 lightweight-charts
 nsepython
+setuptools

@@ -23,7 +23,7 @@ def get_cached_pe(start_str, end_str):
 def create_percentage_overlay_chart(primary_df, secondary_df, indicator_name, line_color):
     """Helper to create a single-pane chart with Percentage Scale overlay."""
     if primary_df.empty:
-        st.warning("Primary data missing.")
+        st.warning("Primary data (Nifty 50) missing or could not be fetched.")
         return
         
     chart = StreamlitChart(width=1000, height=500)
@@ -31,20 +31,22 @@ def create_percentage_overlay_chart(primary_df, secondary_df, indicator_name, li
     # 1. Set the price scale to percentage mode
     chart.price_scale(mode='percentage')
     
-    # 2. Render Nifty as a Line chart for clean overlay
-    # Explicitly select only necessary columns to avoid TV parsing errors
+    # 2. Render Nifty as a Line chart
     nifty_line = chart.create_line(name='Nifty 50', color='rgba(0, 123, 255, 1)')
-    formatted_nifty = primary_df[['time', 'close']].rename(columns={'close': 'Nifty 50'})
+    formatted_nifty = primary_df[['time', 'close']].copy()
+    formatted_nifty['time'] = formatted_nifty['time'].astype(str)
+    formatted_nifty = formatted_nifty.rename(columns={'close': 'Nifty 50'})
     nifty_line.set(formatted_nifty)
     
-    # 3. Add the Indicator as an overlay line on the SAME scale
+    # 3. Add the Indicator as an overlay line
     if not secondary_df.empty:
         line = chart.create_line(name=indicator_name, color=line_color)
-        # Explicitly select only necessary columns
-        formatted_secondary = secondary_df[['time', 'value']].rename(columns={'value': indicator_name})
+        formatted_secondary = secondary_df[['time', 'value']].copy()
+        formatted_secondary['time'] = formatted_secondary['time'].astype(str)
+        formatted_secondary = formatted_secondary.rename(columns={'value': indicator_name})
         line.set(formatted_secondary)
     else:
-        st.warning(f"Secondary data ({indicator_name}) missing.")
+        st.warning(f"Secondary data ({indicator_name}) missing for this period.")
         
     chart.load()
 
@@ -52,22 +54,23 @@ def render_macro_tab():
     st.header("Macro Correlation Hub (Weekly % Overlay)")
     
     end_date = datetime.date.today()
-    # Increase to 20 years as requested
+    # 20 Years of history
     start_date = end_date - datetime.timedelta(days=365*20) 
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
-    with st.spinner("Fetching 20-year weekly data..."):
+    with st.spinner("Fetching historical data..."):
         nifty_df = get_cached_nifty(start_str, end_str)
 
-    # Panels
-    st.subheader("1. Nifty 50 vs USD/INR (% Change)")
+    # Panel 1: Nifty vs USD/INR
+    st.subheader("1. Nifty 50 vs USD/INR Exchange Rate (% Change)")
     with st.spinner("Loading USD/INR..."):
         usdinr_df = get_cached_macro("INR=X", start_str, end_str)
         create_percentage_overlay_chart(nifty_df, usdinr_df, "USD/INR", 'rgba(255, 165, 0, 1)')
 
     st.divider()
 
+    # Panel 2: Nifty vs VIX
     st.subheader("2. Nifty 50 vs India VIX (% Change)")
     with st.spinner("Loading India VIX..."):
         vix_df = get_cached_macro("^INDIAVIX", start_str, end_str)
@@ -75,17 +78,28 @@ def render_macro_tab():
 
     st.divider()
 
-    st.subheader("3. Nifty 50 vs Gold (% Change)")
+    # Panel 3: Nifty vs Gold
+    st.subheader("3. Nifty 50 vs Gold (Futures) (% Change)")
     with st.spinner("Loading Gold..."):
         gold_df = get_cached_macro("GC=F", start_str, end_str)
         create_percentage_overlay_chart(nifty_df, gold_df, "Gold", 'rgba(255, 215, 0, 1)')
 
     st.divider()
     
+    # Panel 4: Nifty vs PE Ratio
     st.subheader("4. Nifty 50 vs Nifty P/E Ratio (% Change)")
     with st.spinner("Loading Nifty P/E..."):
         pe_df = get_cached_pe(start_str, end_str)
         create_percentage_overlay_chart(nifty_df, pe_df, "Nifty P/E", 'rgba(0, 255, 0, 1)')
+
+    st.divider()
+
+    # Panel 5: Nifty vs India 10Y G-Sec (Index Proxy)
+    st.subheader("5. Nifty 50 vs India 10Y G-Sec Index (% Change)")
+    with st.spinner("Loading 10Y Benchmark..."):
+        # ^N10YGBM is the Nifty 10 yr Benchmark G-Sec Index
+        yield_df = get_cached_macro("^N10YGBM", start_str, end_str)
+        create_percentage_overlay_chart(nifty_df, yield_df, "10Y G-Sec Index", 'rgba(128, 0, 128, 1)')
 
 def render_screener_tab():
     st.header("Market Screener (TradingView)")

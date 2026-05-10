@@ -10,44 +10,43 @@ except ImportError:
 def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
     """Formats yfinance dataframe for TradingView Lightweight Charts."""
     if df.empty:
-        return df
-    
-    # Ensure the index is reset so we can find the Date column
-    df = df.copy()
-    if not isinstance(df.index, pd.RangeIndex):
-        df = df.reset_index()
-    
-    # Identify the date column (Yahoo usually returns 'Date' or 'Datetime')
-    date_col = next((col for col in ['Date', 'Datetime', 'index'] if col in df.columns), None)
-    
-    if date_col:
-        # Convert to datetime and then to string YYYY-MM-DD
-        df['time'] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d')
-    else:
-        # Fallback if no date column found, though yfinance should provide one
         return pd.DataFrame()
     
+    # Force a fresh copy to avoid view warnings
+    df = df.copy()
+    
+    # Identify the actual datetime column or index
+    if not isinstance(df.index, pd.DatetimeIndex):
+        date_cols = [c for c in df.columns if 'date' in str(c).lower() or 'time' in str(c).lower()]
+        if date_cols:
+            df['time_raw'] = pd.to_datetime(df[date_cols[0]])
+        else:
+            if 'index' in df.columns:
+                try:
+                    df['time_raw'] = pd.to_datetime(df['index'])
+                except:
+                    return pd.DataFrame()
+            else:
+                return pd.DataFrame()
+    else:
+        df['time_raw'] = df.index
+    
+    # Convert to clean YYYY-MM-DD string, dropping timezone
+    df['time'] = pd.to_datetime(df['time_raw']).dt.tz_localize(None).dt.strftime('%Y-%m-%d')
+    df = df.dropna(subset=['time'])
+    
     df = df.rename(columns={
-        'Open': 'open',
-        'High': 'high',
-        'Low': 'low',
-        'Close': 'close',
-        'Volume': 'volume'
+        'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
     })
     
-    # Standardize columns: always return time, open, high, low, close, volume
-    cols = ['time', 'open', 'high', 'low', 'close', 'volume']
-    available_cols = [c for col in cols if (c := col if col in df.columns else None)]
-    
-    # If it's macro data (just line), we'll keep 'close' for now and rename in app.py
-    # But we MUST drop NaN values or charts will distort or fail
+    # Drop NaNs in close to avoid chart distortion
     if 'close' in df.columns:
         df = df.dropna(subset=['close'])
     
-    return df[available_cols]
+    return df.sort_values('time')
 
 def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
-    """Fetches Nifty 50 historical data with selectable interval."""
+    """Fetches Nifty 50 historical data."""
     try:
         ticker = yf.Ticker("^NSEI")
         df = ticker.history(start=start_date, end=end_date, interval=interval)
@@ -56,14 +55,26 @@ def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> p
         return pd.DataFrame()
 
 def fetch_macro_data(ticker_symbol: str, start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
-    """Fetches historical data for a given macro indicator with selectable interval."""
+    """Fetches historical data for a given macro indicator."""
     try:
         ticker = yf.Ticker(ticker_symbol)
         df = ticker.history(start=start_date, end=end_date, interval=interval)
-        # Macro data is usually just a line, so we just need time and value
         df = format_for_tv(df)
         if not df.empty and 'close' in df.columns:
             df = df.rename(columns={'close': 'value'})
+            return df[['time', 'value']]
+        return pd.DataFrame()
+    except Exception:
+        return pd.DataFrame()
+
+def fetch_fred_data(series_id: str, start_date: str, end_date: str) -> pd.DataFrame:
+    """Fetches macro data from FRED."""
+    try:
+        df = web.DataReader(series_id, 'fred', start_date, end_date)
+        df = format_for_tv(df)
+        if not df.empty:
+            # FRED usually has one column with the series ID as name
+            df = df.rename(columns={series_id: 'value'})
             return df[['time', 'value']]
         return pd.DataFrame()
     except Exception:
@@ -87,14 +98,15 @@ def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
         df = index_pe_pb_div("NIFTY 50", start_str, end_str)
         if df is not None and not df.empty:
             # df has 'Date', 'P/E', 'P/B', 'Div Yield'
-            # Convert 'Date' back to 'YYYY-MM-DD' for TradingView
-            df['Date'] = pd.to_datetime(df['Date'])
-            df['time'] = df['Date'].dt.strftime('%Y-%m-%d')
+            # Force cleanup and conversion
+            df = df.copy()
+            df['time_raw'] = pd.to_datetime(df['Date'])
+            df['time'] = df['time_raw'].dt.strftime('%Y-%m-%d')
             df['value'] = pd.to_numeric(df['P/E'], errors='coerce')
-            df = df.dropna(subset=['value'])
             
-            # Sort chronologically
-            df = df.sort_values(by='Date')
+            # Drop invalid values and sort
+            df = df.dropna(subset=['time', 'value'])
+            df = df.sort_values(by='time_raw')
             
             return df[['time', 'value']]
         return pd.DataFrame()
