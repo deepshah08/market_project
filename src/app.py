@@ -18,7 +18,9 @@ def create_overlay_chart(primary_df, secondary_df, indicator_name, line_color):
     
     if not secondary_df.empty:
         line = chart.create_line(name=indicator_name, color=line_color, price_scale_id='right')
-        line.set(secondary_df)
+        # lightweight-charts expects the value column to match the line name
+        formatted_secondary = secondary_df.rename(columns={'value': indicator_name})
+        line.set(formatted_secondary)
     else:
         st.warning(f"Secondary data ({indicator_name}) missing.")
         
