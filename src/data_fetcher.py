@@ -11,12 +11,21 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
     """Formats yfinance dataframe for TradingView Lightweight Charts."""
     if df.empty:
         return df
-    df = df.reset_index()
-    # Handle timezone-aware dates by converting to string
-    if 'Date' in df.columns:
-        df['time'] = df['Date'].dt.strftime('%Y-%m-%d')
-    elif 'Datetime' in df.columns:
-        df['time'] = df['Datetime'].dt.strftime('%Y-%m-%d')
+    
+    # Ensure the index is reset so we can find the Date column
+    df = df.copy()
+    if not isinstance(df.index, pd.RangeIndex):
+        df = df.reset_index()
+    
+    # Identify the date column (Yahoo usually returns 'Date' or 'Datetime')
+    date_col = next((col for col in ['Date', 'Datetime', 'index'] if col in df.columns), None)
+    
+    if date_col:
+        # Convert to datetime and then to string YYYY-MM-DD
+        df['time'] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d')
+    else:
+        # Fallback if no date column found, though yfinance should provide one
+        return pd.DataFrame()
     
     df = df.rename(columns={
         'Open': 'open',
@@ -26,12 +35,16 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         'Volume': 'volume'
     })
     
-    # Drop rows with NaN in the 'close' column (or 'value' later) to prevent chart breaks
+    # Standardize columns: always return time, open, high, low, close, volume
+    cols = ['time', 'open', 'high', 'low', 'close', 'volume']
+    available_cols = [c for col in cols if (c := col if col in df.columns else None)]
+    
+    # If it's macro data (just line), we'll keep 'close' for now and rename in app.py
+    # But we MUST drop NaN values or charts will distort or fail
     if 'close' in df.columns:
         df = df.dropna(subset=['close'])
-        return df[['time', 'open', 'high', 'low', 'close', 'volume']]
     
-    return df
+    return df[available_cols]
 
 def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
     """Fetches Nifty 50 historical data with selectable interval."""
