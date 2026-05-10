@@ -1,6 +1,11 @@
 import yfinance as yf
 import pandas as pd
 import requests
+import datetime
+try:
+    from nsepython import index_pe_pb_div
+except ImportError:
+    index_pe_pb_div = None
 
 def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
     """Formats yfinance dataframe for TradingView Lightweight Charts."""
@@ -20,7 +25,13 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         'Close': 'close',
         'Volume': 'volume'
     })
-    return df[['time', 'open', 'high', 'low', 'close', 'volume']]
+    
+    # Drop rows with NaN in the 'close' column (or 'value' later) to prevent chart breaks
+    if 'close' in df.columns:
+        df = df.dropna(subset=['close'])
+        return df[['time', 'open', 'high', 'low', 'close', 'volume']]
+    
+    return df
 
 def fetch_nifty_data(start_date: str, end_date: str) -> pd.DataFrame:
     """Fetches Nifty 50 daily historical data."""
@@ -38,20 +49,41 @@ def fetch_macro_data(ticker_symbol: str, start_date: str, end_date: str) -> pd.D
         df = ticker.history(start=start_date, end=end_date)
         # Macro data is usually just a line, so we just need time and value
         df = format_for_tv(df)
-        if not df.empty:
+        if not df.empty and 'close' in df.columns:
             df = df.rename(columns={'close': 'value'})
             return df[['time', 'value']]
-        return df
+        return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
 
-def fetch_polymarket_events() -> list:
-    """Fetches active events from Polymarket Gamma API."""
-    url = "https://gamma-api.polymarket.com/events?active=true&closed=false&limit=5"
+def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
+    """Fetches Nifty 50 PE ratio history using nsepython."""
+    if not index_pe_pb_div:
+        return pd.DataFrame()
+    
     try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            return response.json()
-        return []
-    except Exception:
-        return []
+        # nsepython requires dates in "DD-Mon-YYYY" or "DD-MM-YYYY" format
+        # start_date and end_date come in as YYYY-MM-DD
+        start_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        
+        # Using DD-Mon-YYYY which is standard for NSE
+        start_str = start_obj.strftime("%d-%b-%Y")
+        end_str = end_obj.strftime("%d-%b-%Y")
+        
+        df = index_pe_pb_div("NIFTY 50", start_str, end_str)
+        if df is not None and not df.empty:
+            # df has 'Date', 'P/E', 'P/B', 'Div Yield'
+            # Convert 'Date' back to 'YYYY-MM-DD' for TradingView
+            df['Date'] = pd.to_datetime(df['Date'])
+            df['time'] = df['Date'].dt.strftime('%Y-%m-%d')
+            df['value'] = pd.to_numeric(df['P/E'], errors='coerce')
+            df = df.dropna(subset=['value'])
+            
+            # Sort chronologically
+            df = df.sort_values(by='Date')
+            
+            return df[['time', 'value']]
+        return pd.DataFrame()
+    except Exception as e:
+        return pd.DataFrame()
