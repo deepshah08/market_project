@@ -17,96 +17,80 @@ def get_cached_nifty(start_str, end_str):
 def get_cached_macro(ticker, start_str, end_str):
     return fetch_macro_data(ticker, start_str, end_str, interval="1wk")
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def get_cached_pe(start_str, end_str):
     return fetch_nifty_pe_data(start_str, end_str)
 
-def create_percentage_overlay_chart(primary_df, secondary_df, indicator_name, line_color):
-    """Helper to create a single-pane chart with Percentage Scale overlay."""
+def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color):
+    """Creates a two-pane synchronized chart (Top: Nifty, Bottom: Indicator) with original units."""
     if primary_df.empty:
-        st.warning("Primary data (Nifty 50) missing or could not be fetched.")
+        st.warning("Primary data (Nifty 50) missing.")
         return
         
-    chart = StreamlitChart(width=1000, height=500)
+    chart = StreamlitChart(width=1000, height=600, inner_height=0.7)
     
-    # 1. Set the price scale to percentage mode
-    chart.price_scale(mode='percentage')
-    
-    # 2. Render Nifty as a Line chart
-    nifty_line = chart.create_line(name='Nifty 50', color='rgba(0, 123, 255, 1)')
-    
-    # CRITICAL FIX: The charting library assumes nanosecond resolution.
-    # If the input data uses microsecond or second resolution (common in Pandas 2.0+),
-    # the library's internal conversion results in timestamps 1000x smaller,
-    # causing the "Jan '70" bug. We force nanosecond resolution here.
-    formatted_nifty = primary_df[['time', 'close']].copy()
+    # Render Nifty as Candlesticks in top pane
+    # Force nanosecond resolution for charting library compatibility
+    formatted_nifty = primary_df.copy()
     formatted_nifty['time'] = pd.to_datetime(formatted_nifty['time']).dt.tz_localize(None).dt.as_unit('ns')
-    formatted_nifty = formatted_nifty.rename(columns={'close': 'Nifty 50'})
-    nifty_line.set(formatted_nifty)
+    chart.set(formatted_nifty)
     
-    # 3. Add the Indicator as an overlay line
+    # Create subchart (Bottom Pane - 30% height), synced with main
     if not secondary_df.empty:
-        line = chart.create_line(name=indicator_name, color=line_color)
+        subchart = chart.create_subchart(height=0.3, sync=True)
+        line = subchart.create_line(name=indicator_name, color=line_color)
+        
         formatted_secondary = secondary_df[['time', 'value']].copy()
         formatted_secondary['time'] = pd.to_datetime(formatted_secondary['time']).dt.tz_localize(None).dt.as_unit('ns')
         formatted_secondary = formatted_secondary.rename(columns={'value': indicator_name})
         line.set(formatted_secondary)
     else:
-        st.warning(f"Secondary data ({indicator_name}) missing for this period.")
+        st.warning(f"Data for {indicator_name} missing.")
         
     chart.load()
 
 def render_macro_tab():
-    st.header("Macro Correlation Hub (Weekly % Overlay)")
+    st.header("Macro Correlation Hub (Dual-Pane Sync)")
     
+    # 1. Selection Controls
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        indicator = st.selectbox(
+            "Select Macro Indicator", 
+            ["USD/INR", "India VIX", "Gold Futures", "Nifty P/E Ratio", "India 10Y G-Sec"]
+        )
+    
+    # 2. Timeframe Setup
     end_date = datetime.date.today()
-    # 20 Years of history
     start_date = end_date - datetime.timedelta(days=365*20) 
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
-    with st.spinner("Fetching weekly data..."):
+    # 3. Data Fetching
+    with st.spinner(f"Fetching data for {indicator}..."):
         nifty_df = get_cached_nifty(start_str, end_str)
+        
+        indicator_df = pd.DataFrame()
+        line_color = 'rgba(255, 165, 0, 1)' # Default Orange
+        
+        if indicator == "USD/INR":
+            indicator_df = get_cached_macro("INR=X", start_str, end_str)
+        elif indicator == "India VIX":
+            indicator_df = get_cached_macro("^INDIAVIX", start_str, end_str)
+            line_color = 'rgba(255, 0, 0, 1)'
+        elif indicator == "Gold Futures":
+            indicator_df = get_cached_macro("GC=F", start_str, end_str)
+            line_color = 'rgba(255, 215, 0, 1)'
+        elif indicator == "Nifty P/E Ratio":
+            indicator_df = get_cached_pe(start_str, end_str)
+            line_color = 'rgba(0, 255, 0, 1)'
+        elif indicator == "India 10Y G-Sec":
+            from data_fetcher import fetch_fred_data
+            indicator_df = fetch_fred_data("INDIRLTLT01STM", start_str, end_str)
+            line_color = 'rgba(128, 0, 128, 1)'
 
-    # Panel 1: Nifty vs USD/INR
-    st.subheader("1. Nifty 50 vs USD/INR Exchange Rate (% Change)")
-    with st.spinner("Loading USD/INR..."):
-        usdinr_df = get_cached_macro("INR=X", start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, usdinr_df, "USD/INR", 'rgba(255, 165, 0, 1)')
-
-    st.divider()
-
-    # Panel 2: Nifty vs VIX
-    st.subheader("2. Nifty 50 vs India VIX (% Change)")
-    with st.spinner("Loading India VIX..."):
-        vix_df = get_cached_macro("^INDIAVIX", start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, vix_df, "India VIX", 'rgba(255, 0, 0, 1)')
-
-    st.divider()
-
-    # Panel 3: Nifty vs Gold
-    st.subheader("3. Nifty 50 vs Gold (Futures) (% Change)")
-    with st.spinner("Loading Gold..."):
-        gold_df = get_cached_macro("GC=F", start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, gold_df, "Gold", 'rgba(255, 215, 0, 1)')
-
-    st.divider()
-    
-    # Panel 4: Nifty vs PE Ratio
-    st.subheader("4. Nifty 50 vs Nifty P/E Ratio (% Change)")
-    with st.spinner("Loading Nifty P/E..."):
-        pe_df = get_cached_pe(start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, pe_df, "Nifty P/E", 'rgba(0, 255, 0, 1)')
-
-    st.divider()
-
-    # Panel 5: Nifty vs India 10Y G-Sec (Index Proxy)
-    st.subheader("5. Nifty 50 vs India 10Y G-Sec Index (% Change)")
-    from data_fetcher import fetch_fred_data
-    with st.spinner("Loading 10Y Benchmark..."):
-        # INDIRLTLT01STM is the FRED code for India 10-Year Government Bond Yields
-        yield_df = fetch_fred_data("INDIRLTLT01STM", start_str, end_str)
-        create_percentage_overlay_chart(nifty_df, yield_df, "10Y G-Sec Yield", 'rgba(128, 0, 128, 1)')
+    # 4. Rendering
+    create_dual_pane_chart(nifty_df, indicator_df, indicator, line_color)
 
 def render_screener_tab():
     st.header("Market Screener (TradingView)")
