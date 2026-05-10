@@ -33,20 +33,20 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
-def fetch_nifty_data(start_date: str, end_date: str) -> pd.DataFrame:
-    """Fetches Nifty 50 daily historical data."""
+def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
+    """Fetches Nifty 50 historical data with selectable interval."""
     try:
         ticker = yf.Ticker("^NSEI")
-        df = ticker.history(start=start_date, end=end_date)
+        df = ticker.history(start=start_date, end=end_date, interval=interval)
         return format_for_tv(df)
     except Exception:
         return pd.DataFrame()
 
-def fetch_macro_data(ticker_symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
-    """Fetches historical data for a given macro indicator."""
+def fetch_macro_data(ticker_symbol: str, start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
+    """Fetches historical data for a given macro indicator with selectable interval."""
     try:
         ticker = yf.Ticker(ticker_symbol)
-        df = ticker.history(start=start_date, end=end_date)
+        df = ticker.history(start=start_date, end=end_date, interval=interval)
         # Macro data is usually just a line, so we just need time and value
         df = format_for_tv(df)
         if not df.empty and 'close' in df.columns:
