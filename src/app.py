@@ -8,16 +8,20 @@ def get_app_title():
     return "NSE Market Assistant"
 
 def create_overlay_chart(primary_df, secondary_df, indicator_name, line_color):
-    """Helper to create a standard StreamlitChart overlay."""
+    """Helper to create a standard StreamlitChart overlay with synchronized panes."""
     if primary_df.empty:
         st.warning("Primary data missing.")
         return
         
-    chart = StreamlitChart(width=1000, height=400)
+    # Create main chart taking 70% height
+    chart = StreamlitChart(width=1000, height=500, inner_height=0.7)
     chart.set(primary_df)
     
     if not secondary_df.empty:
-        line = chart.create_line(name=indicator_name, color=line_color, price_scale_id='right')
+        # Create subchart taking 30% height, synced with main chart
+        subchart = chart.create_subchart(height=0.3, sync=True)
+        # Create a line series in the subchart
+        line = subchart.create_line(name=indicator_name, color=line_color)
         # lightweight-charts expects the value column to match the line name
         formatted_secondary = secondary_df.rename(columns={'value': indicator_name})
         line.set(formatted_secondary)
