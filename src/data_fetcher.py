@@ -8,42 +8,44 @@ except ImportError:
     index_pe_pb_div = None
 
 def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
-    """Formats yfinance dataframe for TradingView Lightweight Charts."""
+    """Formats yfinance/nsepython dataframe for TradingView Lightweight Charts with Unix Timestamps."""
     if df.empty:
         return pd.DataFrame()
     
-    # Force a fresh copy to avoid view warnings
     df = df.copy()
     
-    # Identify the actual datetime column or index
-    if not isinstance(df.index, pd.DatetimeIndex):
+    # Identify the actual datetime source
+    if isinstance(df.index, pd.DatetimeIndex):
+        df['time_dt'] = df.index
+    else:
+        # Check for date columns
         date_cols = [c for c in df.columns if 'date' in str(c).lower() or 'time' in str(c).lower()]
         if date_cols:
-            df['time_raw'] = pd.to_datetime(df[date_cols[0]])
+            df['time_dt'] = pd.to_datetime(df[date_cols[0]])
         else:
-            if 'index' in df.columns:
-                try:
-                    df['time_raw'] = pd.to_datetime(df['index'])
-                except:
-                    return pd.DataFrame()
-            else:
-                return pd.DataFrame()
-    else:
-        df['time_raw'] = df.index
+            return pd.DataFrame()
     
-    # Convert to clean YYYY-MM-DD string, dropping timezone
-    df['time'] = pd.to_datetime(df['time_raw']).dt.tz_localize(None).dt.strftime('%Y-%m-%d')
-    df = df.dropna(subset=['time'])
+    # Convert to Unix Timestamp (integers in seconds)
+    # This is the most unambiguous format for TradingView's JS engine
+    df['time'] = df['time_dt'].apply(lambda x: int(x.timestamp()))
     
+    # Clean up and rename columns
     df = df.rename(columns={
         'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
     })
     
-    # Drop NaNs in close to avoid chart distortion
+    # Standardize columns: always return time, open, high, low, close, volume
+    target_cols = ['time', 'open', 'high', 'low', 'close', 'volume']
+    existing_cols = [c for c in target_cols if c in df.columns]
+    
+    # Reset index and drop it to ensure the library doesn't get confused by the old Date index
+    df = df.reset_index(drop=True)
+    
+    # Drop rows with invalid data and sort by time
     if 'close' in df.columns:
         df = df.dropna(subset=['close'])
     
-    return df.sort_values('time')
+    return df[existing_cols].sort_values('time')
 
 def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
     """Fetches Nifty 50 historical data."""
@@ -97,16 +99,15 @@ def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
         
         df = index_pe_pb_div("NIFTY 50", start_str, end_str)
         if df is not None and not df.empty:
-            # df has 'Date', 'P/E', 'P/B', 'Div Yield'
             # Force cleanup and conversion
             df = df.copy()
-            df['time_raw'] = pd.to_datetime(df['Date'])
-            df['time'] = df['time_raw'].dt.strftime('%Y-%m-%d')
+            df['time_dt'] = pd.to_datetime(df['Date'])
+            df['time'] = df['time_dt'].apply(lambda x: int(x.timestamp()))
             df['value'] = pd.to_numeric(df['P/E'], errors='coerce')
             
             # Drop invalid values and sort
             df = df.dropna(subset=['time', 'value'])
-            df = df.sort_values(by='time_raw')
+            df = df.sort_values(by='time')
             
             return df[['time', 'value']]
         return pd.DataFrame()
