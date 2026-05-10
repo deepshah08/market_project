@@ -33,8 +33,13 @@ def create_percentage_overlay_chart(primary_df, secondary_df, indicator_name, li
     
     # 2. Render Nifty as a Line chart
     nifty_line = chart.create_line(name='Nifty 50', color='rgba(0, 123, 255, 1)')
+    
+    # CRITICAL FIX: The charting library assumes nanosecond resolution.
+    # If the input data uses microsecond or second resolution (common in Pandas 2.0+),
+    # the library's internal conversion results in timestamps 1000x smaller,
+    # causing the "Jan '70" bug. We force nanosecond resolution here.
     formatted_nifty = primary_df[['time', 'close']].copy()
-    formatted_nifty['time'] = formatted_nifty['time'].astype(str)
+    formatted_nifty['time'] = pd.to_datetime(formatted_nifty['time']).dt.tz_localize(None).dt.as_unit('ns')
     formatted_nifty = formatted_nifty.rename(columns={'close': 'Nifty 50'})
     nifty_line.set(formatted_nifty)
     
@@ -42,7 +47,7 @@ def create_percentage_overlay_chart(primary_df, secondary_df, indicator_name, li
     if not secondary_df.empty:
         line = chart.create_line(name=indicator_name, color=line_color)
         formatted_secondary = secondary_df[['time', 'value']].copy()
-        formatted_secondary['time'] = formatted_secondary['time'].astype(str)
+        formatted_secondary['time'] = pd.to_datetime(formatted_secondary['time']).dt.tz_localize(None).dt.as_unit('ns')
         formatted_secondary = formatted_secondary.rename(columns={'value': indicator_name})
         line.set(formatted_secondary)
     else:
@@ -59,8 +64,12 @@ def render_macro_tab():
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
-    with st.spinner("Fetching historical data..."):
+    with st.spinner("Fetching weekly data..."):
         nifty_df = get_cached_nifty(start_str, end_str)
+        # Debug: show the data structure
+        st.write("Debug Nifty Data (first 5 rows):")
+        st.write(nifty_df.head())
+        st.write(f"Time column type: {type(nifty_df['time'].iloc[0])}")
 
     # Panel 1: Nifty vs USD/INR
     st.subheader("1. Nifty 50 vs USD/INR Exchange Rate (% Change)")
