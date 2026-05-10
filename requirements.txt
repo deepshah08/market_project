@@ -6,3 +6,6 @@ plotly
 beautifulsoup4
 requests
 pytest
+google-genai
+lightweight-charts
+nsepython

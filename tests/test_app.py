@@ -12,3 +12,7 @@ def test_app_tabs():
     from app import render_macro_tab, render_news_tab
     assert callable(render_macro_tab)
     assert callable(render_news_tab)
+
+def test_screener_tab_exists():
+    from app import render_screener_tab
+    assert callable(render_screener_tab)
