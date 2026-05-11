@@ -27,14 +27,11 @@ def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color)
         st.warning("Primary data (Nifty 50) missing.")
         return
         
-    # Using height=600 and omitting width to let it be fully responsive
-    chart = StreamlitChart(height=600)
+    # Using height=800 and width=None (default) for responsive behavior
+    chart = StreamlitChart(height=800)
     
     # Render Nifty in the top pane
-    # Force nanosecond resolution for charting library compatibility
-    formatted_nifty = primary_df.copy()
-    formatted_nifty['time'] = pd.to_datetime(formatted_nifty['time']).dt.tz_localize(None).dt.as_unit('ns')
-    chart.set(formatted_nifty)
+    chart.set(primary_df)
     
     # Create subchart (Bottom pane), synced with main
     if not secondary_df.empty:
@@ -42,9 +39,8 @@ def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color)
         subchart = chart.create_subchart(height=0.4, sync=True)
         line = subchart.create_line(name=indicator_name, color=line_color)
         
-        formatted_secondary = secondary_df[['time', 'value']].copy()
-        formatted_secondary['time'] = pd.to_datetime(formatted_secondary['time']).dt.tz_localize(None).dt.as_unit('ns')
-        formatted_secondary = formatted_secondary.rename(columns={'value': indicator_name})
+        # Match column name to line name for library compatibility
+        formatted_secondary = secondary_df.rename(columns={'value': indicator_name})
         line.set(formatted_secondary)
     else:
         st.warning(f"Data for {indicator_name} missing.")

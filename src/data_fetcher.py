@@ -8,7 +8,7 @@ except ImportError:
     index_pe_pb_div = None
 
 def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
-    """Formats yfinance/nsepython dataframe for TradingView Lightweight Charts using clean YYYY-MM-DD strings."""
+    """Formats yfinance/nsepython dataframe for TradingView Lightweight Charts using clean Unix Timestamps (seconds)."""
     if df.empty:
         return pd.DataFrame()
     
@@ -25,24 +25,29 @@ def format_for_tv(df: pd.DataFrame) -> pd.DataFrame:
         else:
             return pd.DataFrame()
     
-    # Convert to clean datetime.date objects
-    # This is often the most reliable format for library-agnostic date handling
-    df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).dt.date
+    # Convert to clean Unix Timestamps (Nanoseconds as integers)
+    # This is the ONLY format that survives the library's internal pd.to_datetime() // 10^9 
+    # logic across different Pandas versions (1.x and 2.x).
+    df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).apply(lambda x: int(x.timestamp() * 10**9))
     
     # Drop rows with invalid dates
     df = df.dropna(subset=['time'])
     
-    # Clean up and rename columns
     df = df.rename(columns={
         'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
     })
     
-    # Standardize columns
+    # Ensure standard columns are present and numeric
+    for col in ['open', 'high', 'low', 'close', 'volume']:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # Final column selection
     target_cols = ['time', 'open', 'high', 'low', 'close', 'volume']
     existing_cols = [c for c in target_cols if c in df.columns]
     
-    # Final cleanup: drop any remaining NaNs and sort
-    return df[existing_cols].dropna().sort_values('time').reset_index(drop=True)
+    # Reset index and sort
+    return df[existing_cols].sort_values('time').reset_index(drop=True)
 
 def fetch_nifty_data(start_date: str, end_date: str, interval: str = "1wk") -> pd.DataFrame:
     """Fetches Nifty 50 historical data."""
@@ -67,16 +72,25 @@ def fetch_macro_data(ticker_symbol: str, start_date: str, end_date: str, interva
         return pd.DataFrame()
 
 def fetch_fred_data(series_id: str, start_date: str, end_date: str) -> pd.DataFrame:
-    """Fetches macro data from FRED."""
+    """Fetches macro data from FRED via direct CSV download to bypass pandas_datareader issues."""
     try:
-        df = web.DataReader(series_id, 'fred', start_date, end_date)
-        df = format_for_tv(df)
-        if not df.empty:
-            # FRED usually has one column with the series ID as name
-            df = df.rename(columns={series_id: 'value'})
-            return df[['time', 'value']]
+        import io
+        url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
+        # Use verify=False to bypass common macOS Python SSL certificate issues
+        response = requests.get(url, verify=False, timeout=10)
+        if response.status_code == 200:
+            df = pd.read_csv(io.StringIO(response.text), parse_dates=['observation_date'], na_values='.')
+            df = df.rename(columns={'observation_date': 'time_dt', series_id: 'value'})
+            
+            # Format to unix timestamp (nanoseconds as integers)
+            df['time'] = pd.to_datetime(df['time_dt']).dt.tz_localize(None).apply(lambda x: int(x.timestamp() * 10**9))
+            
+            # Clean up
+            df['value'] = pd.to_numeric(df['value'], errors='coerce')
+            df = df.dropna(subset=['time', 'value'])
+            return df[['time', 'value']].sort_values('time').reset_index(drop=True)
         return pd.DataFrame()
-    except Exception:
+    except Exception as e:
         return pd.DataFrame()
 
 def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
@@ -85,24 +99,21 @@ def fetch_nifty_pe_data(start_date: str, end_date: str) -> pd.DataFrame:
         return pd.DataFrame()
     
     try:
-        # nsepython requires dates in "DD-Mon-YYYY" or "DD-MM-YYYY" format
-        # start_date and end_date come in as YYYY-MM-DD
+        # nsepython requires dates in "DD-Mon-YYYY" format
         start_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         
-        # Using DD-Mon-YYYY which is standard for NSE
         start_str = start_obj.strftime("%d-%b-%Y")
         end_str = end_obj.strftime("%d-%b-%Y")
         
         df = index_pe_pb_div("NIFTY 50", start_str, end_str)
         if df is not None and not df.empty:
-            # Force cleanup and conversion
             df = df.copy()
-            df['time_dt'] = pd.to_datetime(df['DATE'])
-            df['time'] = df['time_dt'].dt.date
+            # Format to unix timestamp (nanoseconds as integers)
+            df['time_dt'] = pd.to_datetime(df['DATE'], format='%d %b %Y')
+            df['time'] = df['time_dt'].dt.tz_localize(None).apply(lambda x: int(x.timestamp() * 10**9))
             df['value'] = pd.to_numeric(df['pe'], errors='coerce')
             
-            # Drop invalid values and sort
             return df[['time', 'value']].dropna().sort_values(by='time').reset_index(drop=True)
         return pd.DataFrame()
     except Exception as e:
