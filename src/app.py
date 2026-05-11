@@ -28,7 +28,8 @@ def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color)
         return
         
     # Create main chart (Top Pane - 50% height, increased total height to 800)
-    chart = StreamlitChart(width=1000, height=800, inner_height=0.5)
+    # Using width=0 to force it to take up the full container width
+    chart = StreamlitChart(width=0, height=800, inner_height=0.5)
     
     # Render Nifty as Candlesticks in top pane
     # Force nanosecond resolution for charting library compatibility
