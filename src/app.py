@@ -45,6 +45,15 @@ def create_dual_pane_chart(primary_df, secondary_df, indicator_name, line_color)
     else:
         st.warning(f"Data for {indicator_name} missing.")
         
+    # FIX for invisible charts: Force the internal container to fill the Streamlit iframe
+    chart.run_script("""
+        var container = document.getElementById('container');
+        if (container) {
+            container.style.width = '100%';
+            container.style.height = '100vh';
+        }
+    """)
+        
     chart.load()
 
 def render_macro_tab():
