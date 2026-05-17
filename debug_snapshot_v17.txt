@@ -1,0 +1,29 @@
+uid=13_0 RootWebArea "NSE Market Assistant" url="http://localhost:8503/"
+  uid=13_1 banner
+    uid=13_2 image "Running..."
+    uid=13_3 button "Stop"
+    uid=13_4 button "Deploy"
+    uid=13_5 button "Main menu" expandable haspopup="menu"
+  uid=13_6 generic
+    uid=13_7 StaticText "NSE Market Assistant"
+    uid=13_8 link "Link to heading" url="http://localhost:8503/#nse-market-assistant"
+    uid=13_9 tab "Macro Hub" selectable selected
+    uid=13_10 tab "Market Screener" selectable
+    uid=13_11 tab "News Scanner" selectable
+    uid=13_12 tab "Kite (Future)" selectable
+    uid=13_13 StaticText "Macro Correlation Hub (Weekly % Overlay)"
+    uid=13_14 link "Link to heading" url="http://localhost:8503/#macro-correlation-hub-weekly-overlay"
+    uid=13_15 StaticText "1. Nifty 50 vs USD/INR Exchange Rate (% Change)"
+    uid=13_16 link "Link to heading" url="http://localhost:8503/#1-nifty-50-vs-usd-inr-exchange-rate-change"
+    uid=13_17 Iframe "st.iframe"
+      uid=13_18 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=13_19 StaticText "2. Nifty 50 vs India VIX (% Change)"
+    uid=13_20 link "Link to heading" url="http://localhost:8503/#2-nifty-50-vs-india-vix-change"
+    uid=13_21 Iframe "st.iframe"
+      uid=13_22 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=13_23 StaticText "3. Nifty 50 vs Gold (Futures) (% Change)"
+    uid=13_24 link "Link to heading" url="http://localhost:8503/#3-nifty-50-vs-gold-futures-change"
+    uid=13_25 Iframe "st.iframe"
+      uid=13_26 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=13_27 StaticText "4. Nifty 50 vs Nifty P/E Ratio (% Change)"
+    uid=13_28 link "Link to heading" url="http://localhost:8503/#4-nifty-50-vs-nifty-p-e-ratio-change"

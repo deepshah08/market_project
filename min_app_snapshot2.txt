@@ -1,0 +1,13 @@
+uid=36_0 RootWebArea "Streamlit" url="http://localhost:8511/"
+  uid=36_1 banner
+    uid=36_2 image "Running..."
+    uid=36_3 button "Stop"
+    uid=36_4 button "Deploy"
+    uid=36_5 button "Main menu" expandable haspopup="menu"
+  uid=36_6 generic
+    uid=36_7 StaticText "Chart 1: width=0, height=800 with 100% height fix"
+    uid=36_8 Iframe "st.iframe"
+      uid=36_9 RootWebArea "lightweight-charts-python" busy url="about:srcdoc"
+    uid=36_10 StaticText "Chart 2: width=1280 (Fixed, Large)"
+    uid=36_11 Iframe "st.iframe"
+      uid=36_12 RootWebArea "lightweight-charts-python" url="about:srcdoc"

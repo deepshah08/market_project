@@ -1,0 +1,127 @@
+uid=3_0 RootWebArea "NSE Market Assistant" url="http://localhost:8502/"
+  uid=3_1 banner
+    uid=3_2 button "Deploy"
+    uid=3_3 button "Main menu" expandable haspopup="menu"
+  uid=3_4 generic
+    uid=3_5 StaticText "NSE Market Assistant"
+    uid=3_6 link "Link to heading" url="http://localhost:8502/#nse-market-assistant"
+    uid=3_7 tab "Macro Hub" selectable selected
+    uid=3_8 tab "Market Screener" selectable
+    uid=3_9 tab "News Scanner" selectable
+    uid=3_10 tab "Kite (Future)" selectable
+    uid=3_11 StaticText "Macro Correlation Hub (Weekly % Overlay)"
+    uid=3_12 link "Link to heading" url="http://localhost:8502/#macro-correlation-hub-weekly-overlay"
+    uid=3_13 StaticText "Debug Nifty Data (first 5 rows):"
+    uid=3_14 button "Show/hide columns"
+    uid=3_15 button "Download as CSV"
+    uid=3_16 button "Search"
+    uid=3_17 button "Fullscreen"
+    uid=3_18 Canvas
+      uid=3_19 columnheader selectable
+      uid=3_20 columnheader "time" selectable
+        uid=3_21 StaticText "time"
+      uid=3_22 columnheader "open" selectable
+        uid=3_23 StaticText "open"
+      uid=3_24 columnheader "high" selectable
+        uid=3_25 StaticText "high"
+      uid=3_26 columnheader "low" selectable
+        uid=3_27 StaticText "low"
+      uid=3_28 columnheader "close" selectable
+        uid=3_29 StaticText "close"
+      uid=3_30 columnheader "volume" selectable
+        uid=3_31 StaticText "volume"
+      uid=3_32 gridcell "0" readonly selectable
+        uid=3_33 StaticText "0"
+      uid=3_34 gridcell "2007-09-17" readonly selectable
+        uid=3_35 StaticText "2007-09-17"
+      uid=3_36 gridcell "4518.4501953125" readonly selectable
+        uid=3_37 StaticText "4518.4501953125"
+      uid=3_38 gridcell "4855.7001953125" readonly selectable
+        uid=3_39 StaticText "4855.7001953125"
+      uid=3_40 gridcell "4481.5498046875" readonly selectable
+        uid=3_41 StaticText "4481.5498046875"
+      uid=3_42 gridcell "4837.5498046875" readonly selectable
+        uid=3_43 StaticText "4837.5498046875"
+      uid=3_44 gridcell "0" readonly selectable
+        uid=3_45 StaticText "0"
+      uid=3_46 gridcell "1" readonly selectable
+        uid=3_47 StaticText "1"
+      uid=3_48 gridcell "2007-09-24" readonly selectable
+        uid=3_49 StaticText "2007-09-24"
+      uid=3_50 gridcell "4837.14990234375" readonly selectable
+        uid=3_51 StaticText "4837.14990234375"
+      uid=3_52 gridcell "5055.7998046875" readonly selectable
+        uid=3_53 StaticText "5055.7998046875"
+      uid=3_54 gridcell "4837.14990234375" readonly selectable
+        uid=3_55 StaticText "4837.14990234375"
+      uid=3_56 gridcell "5021.35009765625" readonly selectable
+        uid=3_57 StaticText "5021.35009765625"
+      uid=3_58 gridcell "0" readonly selectable
+        uid=3_59 StaticText "0"
+      uid=3_60 gridcell "2" readonly selectable
+        uid=3_61 StaticText "2"
+      uid=3_62 gridcell "2007-10-01" readonly selectable
+        uid=3_63 StaticText "2007-10-01"
+      uid=3_64 gridcell "5021.5" readonly selectable
+        uid=3_65 StaticText "5021.5"
+      uid=3_66 gridcell "5261.35009765625" readonly selectable
+        uid=3_67 StaticText "5261.35009765625"
+      uid=3_68 gridcell "5001.35009765625" readonly selectable
+        uid=3_69 StaticText "5001.35009765625"
+      uid=3_70 gridcell "5185.85009765625" readonly selectable
+        uid=3_71 StaticText "5185.85009765625"
+      uid=3_72 gridcell "0" readonly selectable
+        uid=3_73 StaticText "0"
+      uid=3_74 gridcell "3" readonly selectable
+        uid=3_75 StaticText "3"
+      uid=3_76 gridcell "2007-10-08" readonly selectable
+        uid=3_77 StaticText "2007-10-08"
+      uid=3_78 gridcell "5186.25" readonly selectable
+        uid=3_79 StaticText "5186.25"
+      uid=3_80 gridcell "5549.2998046875" readonly selectable
+        uid=3_81 StaticText "5549.2998046875"
+      uid=3_82 gridcell "5000.9501953125" readonly selectable
+        uid=3_83 StaticText "5000.9501953125"
+      uid=3_84 gridcell "5428.25" readonly selectable
+        uid=3_85 StaticText "5428.25"
+      uid=3_86 gridcell "0" readonly selectable
+        uid=3_87 StaticText "0"
+      uid=3_88 gridcell "4" readonly selectable
+        uid=3_89 StaticText "4"
+      uid=3_90 gridcell "2007-10-15" readonly selectable
+        uid=3_91 StaticText "2007-10-15"
+      uid=3_92 gridcell "5428.35009765625" readonly selectable
+        uid=3_93 StaticText "5428.35009765625"
+      uid=3_94 gridcell "5736.7998046875" readonly selectable
+        uid=3_95 StaticText "5736.7998046875"
+      uid=3_96 gridcell "5101.75" readonly selectable
+        uid=3_97 StaticText "5101.75"
+      uid=3_98 gridcell "5215.2998046875" readonly selectable
+        uid=3_99 StaticText "5215.2998046875"
+      uid=3_100 gridcell "0" readonly selectable
+        uid=3_101 StaticText "0"
+    uid=3_102 StaticText "Time column type: <class 'datetime.date'>"
+    uid=3_103 StaticText "1. Nifty 50 vs USD/INR Exchange Rate (% Change)"
+    uid=3_104 link "Link to heading" url="http://localhost:8502/#1-nifty-50-vs-usd-inr-exchange-rate-change"
+    uid=3_105 Iframe "st.iframe"
+      uid=3_106 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=3_107 StaticText "2. Nifty 50 vs India VIX (% Change)"
+    uid=3_108 link "Link to heading" url="http://localhost:8502/#2-nifty-50-vs-india-vix-change"
+    uid=3_109 Iframe "st.iframe"
+      uid=3_110 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=3_111 StaticText "3. Nifty 50 vs Gold (Futures) (% Change)"
+    uid=3_112 link "Link to heading" url="http://localhost:8502/#3-nifty-50-vs-gold-futures-change"
+    uid=3_113 Iframe "st.iframe"
+      uid=3_114 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=3_115 StaticText "4. Nifty 50 vs Nifty P/E Ratio (% Change)"
+    uid=3_116 link "Link to heading" url="http://localhost:8502/#4-nifty-50-vs-nifty-p-e-ratio-change"
+    uid=3_117 alert atomic live="assertive" relevant="additions text"
+      uid=3_118 StaticText "Secondary data (Nifty P/E) missing for this period."
+    uid=3_119 Iframe "st.iframe"
+      uid=3_120 RootWebArea "lightweight-charts-python" url="about:srcdoc"
+    uid=3_121 StaticText "5. Nifty 50 vs India 10Y G-Sec Index (% Change)"
+    uid=3_122 link "Link to heading" url="http://localhost:8502/#5-nifty-50-vs-india-10-y-g-sec-index-change"
+    uid=3_123 alert atomic live="assertive" relevant="additions text"
+      uid=3_124 StaticText "Secondary data (10Y G-Sec Index) missing for this period."
+    uid=3_125 Iframe "st.iframe"
+      uid=3_126 RootWebArea "lightweight-charts-python" url="about:srcdoc"

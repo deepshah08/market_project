@@ -1,0 +1,35 @@
+uid=17_0 RootWebArea "NSE Market Assistant" url="http://localhost:8504/"
+  uid=17_1 banner
+    uid=17_2 button "Deploy"
+    uid=17_3 button "Main menu" expandable haspopup="menu"
+  uid=17_4 generic
+    uid=17_5 StaticText "NSE Market Assistant"
+    uid=17_6 link "Link to heading" url="http://localhost:8504/#nse-market-assistant"
+    uid=17_7 tab "Macro Hub" selectable selected
+    uid=17_8 tab "Market Screener" selectable
+    uid=17_9 tab "News Scanner" selectable
+    uid=17_10 tab "Kite (Future)" selectable
+    uid=17_11 StaticText "Macro Correlation Hub (Dual-Pane Sync)"
+    uid=17_12 link "Link to heading" url="http://localhost:8504/#macro-correlation-hub-dual-pane-sync"
+    uid=17_13 StaticText "USD/INR"
+    uid=17_14 combobox "Selected USD/INR. Select Macro Indicator" autocomplete="list" expandable haspopup="listbox"
+    uid=17_15 image "open" description="open"
+    uid=17_16 alert atomic live="assertive" relevant="additions text"
+      uid=17_17 StaticText "NameError"
+      uid=17_18 StaticText ": "
+      uid=17_19 StaticText "name 'formatted_nifty' is not defined"
+      uid=17_20 StaticText "Traceback:"
+      uid=17_21 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 140, in <module>
+    render_macro_tab()
+    ~~~~~~~~~~~~~~~~^^"
+      uid=17_22 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 92, in render_macro_tab
+    create_dual_pane_chart(nifty_df, indicator_df, indicator, line_color)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+      uid=17_23 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 35, in create_dual_pane_chart
+    chart.set(formatted_nifty)
+              ^^^^^^^^^^^^^^^"
+      uid=17_24 button "Copy"
+      uid=17_25 link "Ask Google" url="https://www.google.com/search?q=NameError%3A%20name%20%27formatted_nifty%27%20is%20not%20defined"
+        uid=17_26 StaticText "Ask Google"
+      uid=17_27 link "Ask ChatGPT" url="https://chatgpt.com/?q=NameError%3A%20name%20%27formatted_nifty%27%20is%20not%20defined%0A%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%20140%2C%20in%20%3Cmodule%3E%0A%20%20%20%20render_macro_tab()%0A%20%20%20%20~~~~~~~~~~~~~~~~%5E%5E%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%2092%2C%20in%20render_macro_tab%0A%20%20%20%20create_dual_pane_chart(nifty_df%2C%20indicator_df%2C%20indicator%2C%20line_color)%0A%20%20%20%20~~~~~~~~~~~~~~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%2035%2C%20in%20create_dual_pane_chart%0A%20%20%20%20chart.set(formatted_nifty)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E"
+        uid=17_28 StaticText "Ask ChatGPT"

@@ -1,0 +1,35 @@
+uid=23_0 RootWebArea "NSE Market Assistant" url="http://localhost:8506/"
+  uid=23_1 banner
+    uid=23_2 button "Deploy"
+    uid=23_3 button "Main menu" expandable haspopup="menu"
+  uid=23_4 generic
+    uid=23_5 StaticText "NSE Market Assistant"
+    uid=23_6 link "Link to heading" url="http://localhost:8506/#nse-market-assistant"
+    uid=23_7 tab "Macro Hub" selectable selected
+    uid=23_8 tab "Market Screener" selectable
+    uid=23_9 tab "News Scanner" selectable
+    uid=23_10 tab "Kite (Future)" selectable
+    uid=23_11 StaticText "Macro Correlation Hub (Dual-Pane Sync)"
+    uid=23_12 link "Link to heading" url="http://localhost:8506/#macro-correlation-hub-dual-pane-sync"
+    uid=23_13 StaticText "USD/INR"
+    uid=23_14 combobox "Selected USD/INR. Select Macro Indicator" autocomplete="list" expandable haspopup="listbox"
+    uid=23_15 image "open" description="open"
+    uid=23_16 alert atomic live="assertive" relevant="additions text"
+      uid=23_17 StaticText "TypeError"
+      uid=23_18 StaticText ": "
+      uid=23_19 StaticText "Candlestick.set() got an unexpected keyword argument 'format_cols'"
+      uid=23_20 StaticText "Traceback:"
+      uid=23_21 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 141, in <module>
+    render_macro_tab()
+    ~~~~~~~~~~~~~~~~^^"
+      uid=23_22 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 93, in render_macro_tab
+    create_dual_pane_chart(nifty_df, indicator_df, indicator, line_color)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+      uid=23_23 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 36, in create_dual_pane_chart
+    chart.set(primary_df, format_cols=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+      uid=23_24 button "Copy"
+      uid=23_25 link "Ask Google" url="https://www.google.com/search?q=TypeError%3A%20Candlestick.set()%20got%20an%20unexpected%20keyword%20argument%20%27format_cols%27"
+        uid=23_26 StaticText "Ask Google"
+      uid=23_27 link "Ask ChatGPT" url="https://chatgpt.com/?q=TypeError%3A%20Candlestick.set()%20got%20an%20unexpected%20keyword%20argument%20%27format_cols%27%0A%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%20141%2C%20in%20%3Cmodule%3E%0A%20%20%20%20render_macro_tab()%0A%20%20%20%20~~~~~~~~~~~~~~~~%5E%5E%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%2093%2C%20in%20render_macro_tab%0A%20%20%20%20create_dual_pane_chart(nifty_df%2C%20indicator_df%2C%20indicator%2C%20line_color)%0A%20%20%20%20~~~~~~~~~~~~~~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%2036%2C%20in%20create_dual_pane_chart%0A%20%20%20%20chart.set(primary_df%2C%20format_cols%3DFalse)%0A%20%20%20%20~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E"
+        uid=23_28 StaticText "Ask ChatGPT"

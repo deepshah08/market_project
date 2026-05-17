@@ -1,0 +1,18 @@
+uid=31_0 RootWebArea "NSE Market Assistant" url="http://localhost:8509/"
+  uid=31_1 banner
+    uid=31_2 button "Deploy"
+    uid=31_3 button "Main menu" expandable haspopup="menu"
+  uid=31_4 generic
+    uid=31_5 StaticText "NSE Market Assistant"
+    uid=31_6 link "Link to heading" url="http://localhost:8509/#nse-market-assistant"
+    uid=31_7 tab "Macro Hub" selectable selected
+    uid=31_8 tab "Market Screener" selectable
+    uid=31_9 tab "News Scanner" selectable
+    uid=31_10 tab "Kite (Future)" selectable
+    uid=31_11 StaticText "Macro Correlation Hub (Dual-Pane Sync)"
+    uid=31_12 link "Link to heading" url="http://localhost:8509/#macro-correlation-hub-dual-pane-sync"
+    uid=31_13 StaticText "USD/INR"
+    uid=31_14 combobox "Selected USD/INR. Select Macro Indicator" autocomplete="list" expandable haspopup="listbox"
+    uid=31_15 image "open" description="open"
+    uid=31_16 Iframe "st.iframe"
+      uid=31_17 RootWebArea "lightweight-charts-python" url="about:srcdoc"

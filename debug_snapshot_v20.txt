@@ -1,0 +1,13 @@
+uid=16_0 RootWebArea "NSE Market Assistant" url="http://localhost:8504/"
+  uid=16_1 banner
+    uid=16_2 button "Deploy"
+    uid=16_3 button "Main menu" expandable haspopup="menu"
+  uid=16_4 generic
+    uid=16_5 StaticText "NSE Market Assistant"
+    uid=16_6 link "Link to heading" url="http://localhost:8504/#nse-market-assistant"
+    uid=16_7 tab "Macro Hub" selectable selected
+    uid=16_8 tab "Market Screener" selectable
+    uid=16_9 tab "News Scanner" selectable
+    uid=16_10 tab "Kite (Future)" selectable
+    uid=16_11 StaticText "Macro Correlation Hub (Dual-Pane Sync)"
+    uid=16_12 link "Link to heading" url="http://localhost:8504/#macro-correlation-hub-dual-pane-sync"

@@ -1,0 +1,19 @@
+uid=43_0 RootWebArea "NSE Market Assistant" url="http://localhost:8530/"
+  uid=43_1 banner
+    uid=43_2 button "Deploy"
+    uid=43_3 button "Main menu" expandable haspopup="menu"
+  uid=43_4 generic
+    uid=43_5 StaticText "NSE Market Assistant"
+    uid=43_6 link "Link to heading" url="http://localhost:8530/#nse-market-assistant"
+    uid=43_7 tab "Macro Hub" selectable selected
+    uid=43_8 tab "Market Screener" selectable
+    uid=43_9 tab "News Scanner" selectable
+    uid=43_10 tab "Kite (Future)" selectable
+    uid=43_11 StaticText "Macro Correlation Hub (Synchronized Engine)"
+    uid=43_12 link "Link to heading" url="http://localhost:8530/#macro-correlation-hub-synchronized-engine"
+    uid=43_13 StaticText "USD/INR"
+    uid=43_14 combobox "Selected USD/INR. Select Macro Indicator" autocomplete="list" expandable haspopup="listbox"
+    uid=43_15 image "open" description="open"
+    uid=43_16 StaticText "Max"
+    uid=43_17 combobox "Selected Max. Select Timeframe" autocomplete="list" expandable haspopup="listbox"
+    uid=43_18 image "open" description="open"

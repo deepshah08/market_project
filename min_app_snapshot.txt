@@ -1,0 +1,25 @@
+uid=35_0 RootWebArea "Streamlit" url="http://localhost:8510/"
+  uid=35_1 banner
+    uid=35_2 button "Deploy"
+    uid=35_3 button "Main menu" expandable haspopup="menu"
+  uid=35_4 generic
+    uid=35_5 StaticText "Chart 1: width=1000 (Hardcoded)"
+    uid=35_6 alert atomic live="assertive" relevant="additions text"
+      uid=35_7 StaticText "TypeError"
+      uid=35_8 StaticText ": "
+      uid=35_9 StaticText "Candlestick.set() got an unexpected keyword argument 'format_cols'"
+      uid=35_10 StaticText "Traceback:"
+      uid=35_11 generic
+        uid=35_12 StaticText "File "/Users/deep/Desktop/market_project/venv/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()"
+        uid=35_13 StaticText "File "/Users/deep/Desktop/market_project/venv/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 689, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^"
+        uid=35_14 StaticText "File "/Users/deep/Desktop/market_project/test_min_app.py", line 16, in <module>
+    chart1.set(df, format_cols=False)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^"
+      uid=35_15 button "Copy"
+      uid=35_16 link "Ask Google" url="https://www.google.com/search?q=TypeError%3A%20Candlestick.set()%20got%20an%20unexpected%20keyword%20argument%20%27format_cols%27"
+        uid=35_17 StaticText "Ask Google"
+      uid=35_18 link "Ask ChatGPT" url="https://chatgpt.com/?q=TypeError%3A%20Candlestick.set()%20got%20an%20unexpected%20keyword%20argument%20%27format_cols%27%0A%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fvenv%2Flib%2Fpython3.13%2Fsite-packages%2Fstreamlit%2Fruntime%2Fscriptrunner%2Fexec_code.py%22%2C%20line%20129%2C%20in%20exec_func_with_error_handling%0A%20%20%20%20result%20%3D%20func()%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fvenv%2Flib%2Fpython3.13%2Fsite-packages%2Fstreamlit%2Fruntime%2Fscriptrunner%2Fscript_runner.py%22%2C%20line%20689%2C%20in%20code_to_exec%0A%20%20%20%20exec(code%2C%20module.__dict__)%20%20%23%20noqa%3A%20S102%0A%20%20%20%20~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Ftest_min_app.py%22%2C%20line%2016%2C%20in%20%3Cmodule%3E%0A%20%20%20%20chart1.set(df%2C%20format_cols%3DFalse)%0A%20%20%20%20~~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E"
+        uid=35_19 StaticText "Ask ChatGPT"

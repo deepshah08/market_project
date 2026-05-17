@@ -1,0 +1,21 @@
+uid=10_0 RootWebArea "Streamlit" url="http://localhost:8501/"
+  uid=10_1 banner
+    uid=10_2 button "Deploy"
+    uid=10_3 button "Main menu" expandable haspopup="menu"
+  uid=10_4 generic
+    uid=10_5 alert atomic live="assertive" relevant="additions text"
+      uid=10_6 StaticText "ImportError"
+      uid=10_7 StaticText ": "
+      uid=10_8 StaticText "Unable to import required dependency numpy. Please see the traceback for details."
+      uid=10_9 StaticText "Traceback:"
+      uid=10_10 StaticText "File "/Users/deep/Desktop/market_project/src/app.py", line 3, in <module>
+    import pandas as pd"
+      uid=10_11 StaticText "File "/Users/deep/Desktop/market_project/venv/lib/python3.13/site-packages/pandas/__init__.py", line 13, in <module>
+    raise ImportError(
+    ...<2 lines>...
+    ) from _e"
+      uid=10_12 button "Copy"
+      uid=10_13 link "Ask Google" url="https://www.google.com/search?q=ImportError%3A%20Unable%20to%20import%20required%20dependency%20numpy.%20Please%20see%20the%20traceback%20for%20details."
+        uid=10_14 StaticText "Ask Google"
+      uid=10_15 link "Ask ChatGPT" url="https://chatgpt.com/?q=ImportError%3A%20Unable%20to%20import%20required%20dependency%20numpy.%20Please%20see%20the%20traceback%20for%20details.%0A%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fsrc%2Fapp.py%22%2C%20line%203%2C%20in%20%3Cmodule%3E%0A%20%20%20%20import%20pandas%20as%20pd%0AFile%20%22%2FUsers%2Fdeep%2FDesktop%2Fmarket_project%2Fvenv%2Flib%2Fpython3.13%2Fsite-packages%2Fpandas%2F__init__.py%22%2C%20line%2013%2C%20in%20%3Cmodule%3E%0A%20%20%20%20raise%20ImportError(%0A%20%20%20%20...%3C2%20lines%3E...%0A%20%20%20%20)%20from%20_e"
+        uid=10_16 StaticText "Ask ChatGPT"
