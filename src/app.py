@@ -68,28 +68,36 @@ def create_synced_subplot_chart(nifty_df, indicator_df, indicator_name, line_col
     else:
         st.warning(f"Indicator data ({indicator_name}) missing for this period.")
 
-    # 3. Styling & Sync (High Detail Crosshairs)
+    # 3. Styling & Sync (True Crosshair Spikelines)
     fig.update_layout(
         height=800,
         template='plotly_dark',
         showlegend=False,
         margin=dict(l=50, r=50, t=50, b=50),
         xaxis_rangeslider_visible=False,
-        hovermode='x unified',
-        # Spike lines (Crosshairs) configuration
-        xaxis=dict(
-            showspikes=True,
-            spikemode='across',
-            spikesnap='cursor',
-            spikethickness=1,
-            spikecolor="#999999",
-            spikedash="dash"
-        )
+        hovermode='x unified'
     )
     
-    # Sync spikelines across subplots
-    fig.update_xaxes(showspikes=True, spikemode='across', spikesnap='cursor', showline=True, showgrid=True)
-    fig.update_yaxes(fixedrange=False)
+    # Enable professional crosshairs (Spikelines) that follow the cursor across all subplots
+    fig.update_xaxes(
+        showspikes=True, 
+        spikemode='across', 
+        spikesnap='cursor', 
+        showline=True, 
+        showgrid=True,
+        spikethickness=1,
+        spikecolor="#999999",
+        spikedash="dot"
+    )
+    fig.update_yaxes(
+        showspikes=True, 
+        spikemode='across', 
+        spikesnap='cursor',
+        spikethickness=1,
+        spikecolor="#999999",
+        spikedash="dot",
+        fixedrange=False
+    )
 
     st.plotly_chart(fig, use_container_width=True)
 
