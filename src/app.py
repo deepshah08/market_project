@@ -68,18 +68,27 @@ def create_synced_subplot_chart(nifty_df, indicator_df, indicator_name, line_col
     else:
         st.warning(f"Indicator data ({indicator_name}) missing for this period.")
 
-    # 3. Styling & Sync
+    # 3. Styling & Sync (High Detail Crosshairs)
     fig.update_layout(
         height=800,
         template='plotly_dark',
         showlegend=False,
         margin=dict(l=50, r=50, t=50, b=50),
-        xaxis_rangeslider_visible=False, # Slider in Plotly is often buggy with sync
-        hovermode='x unified'
+        xaxis_rangeslider_visible=False,
+        hovermode='x unified',
+        # Spike lines (Crosshairs) configuration
+        xaxis=dict(
+            showspikes=True,
+            spikemode='across',
+            spikesnap='cursor',
+            spikethickness=1,
+            spikecolor="#999999",
+            spikedash="dash"
+        )
     )
     
-    # Force the X-axis to lock together during zooming
-    fig.update_xaxes(spikemode='across', spikesnap='cursor', showline=True, showgrid=True)
+    # Sync spikelines across subplots
+    fig.update_xaxes(showspikes=True, spikemode='across', spikesnap='cursor', showline=True, showgrid=True)
     fig.update_yaxes(fixedrange=False)
 
     st.plotly_chart(fig, use_container_width=True)
@@ -88,16 +97,36 @@ def render_macro_tab():
     st.header("Macro Correlation Hub (Synchronized Engine)")
     
     # 1. Selection Controls
-    col1, col2 = st.columns([1, 2])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         indicator = st.selectbox(
             "Select Macro Indicator", 
             ["USD/INR", "India VIX", "Gold Futures", "Nifty P/E Ratio", "India 10Y G-Sec"]
         )
+    with col2:
+        timeframe = st.selectbox(
+            "Select Timeframe",
+            ["Max", "10Y", "5Y", "3Y", "1Y", "6M", "YTD"],
+            index=0
+        )
     
     # 2. Timeframe Setup
     end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=365*20) 
+    if timeframe == "Max":
+        start_date = end_date - datetime.timedelta(days=365*25)
+    elif timeframe == "10Y":
+        start_date = end_date - datetime.timedelta(days=365*10)
+    elif timeframe == "5Y":
+        start_date = end_date - datetime.timedelta(days=365*5)
+    elif timeframe == "3Y":
+        start_date = end_date - datetime.timedelta(days=365*3)
+    elif timeframe == "1Y":
+        start_date = end_date - datetime.timedelta(days=365)
+    elif timeframe == "6M":
+        start_date = end_date - datetime.timedelta(days=180)
+    elif timeframe == "YTD":
+        start_date = datetime.date(end_date.year, 1, 1)
+
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
